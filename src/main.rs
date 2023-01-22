@@ -55,22 +55,24 @@ struct AppState {
 async fn users(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpResponse {
     let id = path.into_inner().0 as usize;
 
-    let user_email = data.storage.users[id.clone()].email.clone();
-    let first_name = data.storage.first_names.get_by_idx(id.clone());
-    let last_name = data.storage.last_names.get_by_idx(id.clone());
-    let gender = data.storage.users[id.clone()].gender.to_string();
-    let birth_date = data.storage.users[id.clone()].birth_date.clone();
+    let user = &data.storage.users[id.clone()];
 
-    let user = load::UserJSON {
+    let user_json = load::UserJSON {
         id: id as u32,
-        email: user_email,
-        first_name,
-        last_name,
-        gender,
-        birth_date,
+        email: user.email.clone(),
+        first_name: data
+            .storage
+            .first_names
+            .get_by_idx(user.first_name.clone() as usize),
+        last_name: data
+            .storage
+            .last_names
+            .get_by_idx(user.last_name.clone() as usize),
+        gender: user.gender.to_string(),
+        birth_date: user.birth_date,
     };
 
-    let serialized = serde_json::to_string(&user).unwrap();
+    let serialized = serde_json::to_string(&user_json).unwrap();
 
     HttpResponse::Ok()
         .insert_header(header::ContentType::json())
@@ -78,13 +80,54 @@ async fn users(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpRespon
 }
 
 #[get("/visits/{id}")]
-async fn visits() -> impl Responder {
-    HttpResponse::Ok().body("Hello world!")
+async fn visits(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpResponse {
+    let id = path.into_inner().0 as usize;
+
+    let visit = &data.storage.visits[id.clone()];
+
+    let visit_json = load::VisitJSON {
+        id: id as u32,
+        location: visit.location.clone(),
+        user: visit.user.clone(),
+        mark: visit.mark.clone(),
+        visited_at: visit.visited_at.clone(),
+    };
+
+    let serialized = serde_json::to_string(&visit_json).unwrap();
+
+    HttpResponse::Ok()
+        .insert_header(header::ContentType::json())
+        .body(serialized)
 }
 
 #[get("/locations/{id}")]
-async fn locations() -> impl Responder {
-    HttpResponse::Ok().body("Hello world!")
+async fn locations(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpResponse {
+    let id = path.into_inner().0 as usize;
+
+    let location = &data.storage.locations[id.clone()];
+
+    let location_json = load::LocationJSON {
+        id: id as u32,
+        country: data
+            .storage
+            .countries
+            .get_by_idx(location.country.clone() as usize),
+        city: data
+            .storage
+            .cities
+            .get_by_idx(location.city.clone() as usize),
+        place: data
+            .storage
+            .places
+            .get_by_idx(location.place.clone() as usize),
+        distance: location.distance.clone(),
+    };
+
+    let serialized = serde_json::to_string(&location_json).unwrap();
+
+    HttpResponse::Ok()
+        .insert_header(header::ContentType::json())
+        .body(serialized)
 }
 
 #[get("/users/{id}/visits")]
