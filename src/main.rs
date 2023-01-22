@@ -144,23 +144,10 @@ async fn user_visits(
 
     let user = &data.storage.users[id as usize];
 
-    let mut country_exist = false;
-    let mut from_date_exist = false;
-    let mut to_date_exist = false;
-    let mut to_distance_exist = false;
-
-    if params.country.is_some() {
-        country_exist = true;
-    }
-    if params.fromDate.is_some() {
-        from_date_exist = true;
-    }
-    if params.toDate.is_some() {
-        to_date_exist = true;
-    }
-    if params.toDistance.is_some() {
-        to_distance_exist = true;
-    }
+    let country_exist = params.country.is_some();
+    let from_date_exist = params.fromDate.is_some();
+    let to_date_exist = params.toDate.is_some();
+    let to_distance_exist = params.toDistance.is_some();
 
     if country_exist {
         let country = params.country.as_ref().unwrap().as_str();
@@ -176,13 +163,13 @@ async fn user_visits(
     let mut start_idx: usize = 0;
 
     if to_date_exist {
-        // бинарный поиск, ищем индекс до которого будем итерироваться
+        // найдем индекс до которого будем итерироваться (binary search)
         end_idx = user
             .visits
             .partition_point(|x| x.visited_at < params.toDate.as_ref().unwrap().clone());
     }
     if from_date_exist {
-        // бинарный поиск, ищем индекс от которого будем итерироваться
+        // найдем индекс от которого будем итерироваться (binary search)
         start_idx = user
             .visits
             .partition_point(|x| x.visited_at <= params.fromDate.as_ref().unwrap().clone());
