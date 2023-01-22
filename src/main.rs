@@ -1,21 +1,18 @@
 pub mod dict;
 pub mod load;
+pub mod model;
 pub mod storage;
 
-use actix_web::{get, http::header, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
-use serde::{Deserialize, Serialize};
+use actix_web::{get, http::header, web, App, HttpResponse, HttpServer};
 use std::{process, time::Duration};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    const DATA_DIR: &str = "data";
-    const DATA_FILE: &str = "data.zip";
-
     let mut s = storage::Storage::new();
 
     println!("loading data to in-memory storage");
 
-    if let Err(e) = load::run(DATA_DIR, DATA_FILE, &mut s) {
+    if let Err(e) = load::run(&mut s) {
         println!("Run error: {}", e);
         process::exit(1);
     }
@@ -57,7 +54,7 @@ async fn users(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpRespon
 
     let user = &data.storage.users[id.clone()];
 
-    let user_json = load::UserJSON {
+    let user_json = model::UserJSON {
         id: id as u32,
         email: user.email.clone(),
         first_name: data
@@ -85,7 +82,7 @@ async fn visits(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpRespo
 
     let visit = &data.storage.visits[id.clone()];
 
-    let visit_json = load::VisitJSON {
+    let visit_json = model::VisitJSON {
         id: id as u32,
         location: visit.location.clone(),
         user: visit.user.clone(),
@@ -106,7 +103,7 @@ async fn locations(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpRe
 
     let location = &data.storage.locations[id.clone()];
 
-    let location_json = load::LocationJSON {
+    let location_json = model::LocationJSON {
         id: id as u32,
         country: data
             .storage
@@ -134,7 +131,7 @@ async fn locations(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpRe
 async fn user_visits(
     data: web::Data<AppState>,
     path: web::Path<(u32,)>,
-    params: web::Query<UserVisitsParams>,
+    params: web::Query<model::UserVisitsParams>,
 ) -> HttpResponse {
     let id = path.into_inner().0 as usize;
 
@@ -196,7 +193,7 @@ async fn user_visits(
         visit_ids.push(user_visit.id.clone());
     }
 
-    let mut response_json = UserVisitsJSON {
+    let mut response_json = model::UserVisitsJSON {
         visits: Vec::with_capacity(visit_ids.len()),
     };
 
@@ -204,7 +201,7 @@ async fn user_visits(
         let visit = &data.storage.visits[visit_id];
         let location = &data.storage.locations[visit.location as usize];
 
-        response_json.visits.push(UserVisitJSON {
+        response_json.visits.push(model::UserVisitJSON {
             mark: visit.mark,
             visited_at: visit.visited_at,
             place: data.storage.places.get_by_idx(location.place as usize),
@@ -216,24 +213,4 @@ async fn user_visits(
     HttpResponse::Ok()
         .insert_header(header::ContentType::json())
         .body(resp.unwrap())
-}
-
-#[derive(Debug, Deserialize)]
-pub struct UserVisitsParams {
-    fromDate: Option<i32>,
-    toDate: Option<i32>,
-    country: Option<String>,
-    toDistance: Option<u32>,
-}
-
-#[derive(Debug, Serialize)]
-struct UserVisitJSON {
-    mark: u8,
-    visited_at: i32,
-    place: String,
-}
-
-#[derive(Debug, Serialize)]
-struct UserVisitsJSON {
-    visits: Vec<UserVisitJSON>,
 }

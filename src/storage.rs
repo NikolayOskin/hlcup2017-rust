@@ -1,11 +1,11 @@
 use std::usize;
 
-use crate::dict::Dict;
+use crate::{dict::Dict, model};
 
 pub struct Storage {
-    pub users: Vec<User>,
-    pub visits: Vec<Visit>,
-    pub locations: Vec<Location>,
+    pub users: Vec<model::User>,
+    pub visits: Vec<model::Visit>,
+    pub locations: Vec<model::Location>,
 
     pub last_names: Dict,
     pub first_names: Dict,
@@ -38,7 +38,7 @@ impl Storage {
         birth_date: i32,
         gender: &str,
     ) {
-        self.users[id] = User {
+        self.users[id] = model::User {
             email: String::from(email),
             first_name: self.first_names.put(String::from(first_name)),
             last_name: self.last_names.put(String::from(last_name)),
@@ -49,7 +49,7 @@ impl Storage {
     }
 
     pub fn add_visit(&mut self, id: usize, user: u32, location: u32, visited_at: i32, mark: u8) {
-        self.visits[id] = Visit {
+        self.visits[id] = model::Visit {
             user,
             location,
             visited_at,
@@ -59,7 +59,7 @@ impl Storage {
         let user = &mut self.users[user as usize];
         let location = &self.locations[location as usize];
 
-        let user_visit = UserVisit {
+        let user_visit = model::UserVisit {
             id,
             visited_at,
             country: location.country,
@@ -79,87 +79,13 @@ impl Storage {
         place: &str,
         distance: u32,
     ) {
-        self.locations[id] = Location {
+        self.locations[id] = model::Location {
             country: self.countries.put(String::from(country)),
             city: self.cities.put(String::from(city)),
             place: self.places.put(String::from(place)),
             distance,
         };
     }
-
-    // pub fn shrink_users(&mut self) {
-    //     self.users.truncate(self.users_total as usize);
-    //     self.users.shrink_to_fit();
-    // }
-
-    // pub fn shrink_visits(&mut self) {
-    //     self.visits.truncate(self.visits_total as usize);
-    //     self.visits.shrink_to_fit();
-    // }
-
-    // pub fn shrink_locations(&mut self) {
-    //     self.locations.truncate(self.locations_total as usize);
-    //     self.locations.shrink_to_fit();
-    // }
 }
 
-#[derive(Default, Debug)]
-pub enum Gender {
-    #[default]
-    None,
-    Male,
-    Female,
-}
 
-impl From<&str> for Gender {
-    fn from(s: &str) -> Self {
-        match s {
-            "m" => Gender::Male,
-            "f" => Gender::Female,
-            _ => Gender::None,
-        }
-    }
-}
-
-impl ToString for Gender {
-    fn to_string(&self) -> String {
-        match self {
-            Gender::Male => String::from("m"),
-            Gender::Female => String::from("f"),
-            _ => String::from(""),
-        }
-    }
-}
-
-#[derive(Default)]
-pub struct User {
-    pub email: String,
-    pub first_name: u32,
-    pub last_name: u32,
-    pub birth_date: i32,
-    pub gender: Gender,
-    pub visits: Vec<UserVisit> // отсортирован по visited_at
-}
-
-#[derive(Default)]
-pub struct Visit {
-    pub user: u32,
-    pub location: u32,
-    pub mark: u8,
-    pub visited_at: i32,
-}
-
-pub struct UserVisit {
-    pub id: usize,
-    pub country: u32,
-    pub distance: u32,
-    pub visited_at: i32,
-}
-
-#[derive(Default)]
-pub struct Location {
-    pub country: u32,
-    pub city: u32,
-    pub place: u32,
-    pub distance: u32,
-}
