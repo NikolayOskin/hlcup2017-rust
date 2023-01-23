@@ -29,7 +29,7 @@ impl Storage {
         }
     }
 
-    pub fn add_user(
+    pub fn store_user(
         &mut self,
         id: usize,
         email: &str,
@@ -48,7 +48,7 @@ impl Storage {
         };
     }
 
-    pub fn add_visit(&mut self, id: usize, user: u32, location: u32, visited_at: i32, mark: u8) {
+    pub fn store_visit(&mut self, id: usize, user: u32, location: u32, visited_at: i32, mark: u8) {
         self.visits[id] = model::Visit {
             user,
             location,
@@ -87,5 +87,3 @@ impl Storage {
         };
     }
 }
-
-

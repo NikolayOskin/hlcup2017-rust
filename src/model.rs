@@ -105,11 +105,12 @@ pub struct LocationsDataJSON {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UserVisitsParams {
-    pub fromDate: Option<i32>,
-    pub toDate: Option<i32>,
+    pub from_date: Option<i32>,
+    pub to_date: Option<i32>,
     pub country: Option<String>,
-    pub toDistance: Option<u32>,
+    pub to_distance: Option<u32>,
 }
 
 #[derive(Debug, Serialize)]

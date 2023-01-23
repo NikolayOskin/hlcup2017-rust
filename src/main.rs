@@ -8,25 +8,25 @@ use std::{process, time::Duration};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let mut s = storage::Storage::new();
+    let mut storage = storage::Storage::new();
 
     println!("loading data to in-memory storage");
 
-    if let Err(e) = load::run(&mut s) {
+    if let Err(e) = load::run(&mut storage) {
         println!("Run error: {}", e);
         process::exit(1);
     }
 
     println!(
         "loaded: users {}, visits {}, locations {}",
-        s.users.len(),
-        s.visits.len(),
-        s.locations.len()
+        storage.users.len(),
+        storage.visits.len(),
+        storage.locations.len()
     );
 
     println!("starting web server");
 
-    let state = AppState { storage: s };
+    let state = AppState { storage };
 
     let data = web::Data::new(state);
 
@@ -48,6 +48,7 @@ struct AppState {
     storage: storage::Storage,
 }
 
+// Получение путешественника по id
 #[get("/users/{id}")]
 async fn users(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpResponse {
     let id = path.into_inner().0 as usize;
@@ -76,6 +77,7 @@ async fn users(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpRespon
         .body(serialized)
 }
 
+// Получение визита по id
 #[get("/visits/{id}")]
 async fn visits(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpResponse {
     let id = path.into_inner().0 as usize;
@@ -97,6 +99,7 @@ async fn visits(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpRespo
         .body(serialized)
 }
 
+// Получение локации по id
 #[get("/locations/{id}")]
 async fn locations(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpResponse {
     let id = path.into_inner().0 as usize;
@@ -127,6 +130,7 @@ async fn locations(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpRe
         .body(serialized)
 }
 
+// Получение визитов пользователя согласно get параметрам (отсортированные по visited_at)
 #[get("/users/{id}/visits")]
 async fn user_visits(
     data: web::Data<AppState>,
@@ -142,12 +146,15 @@ async fn user_visits(
     let user = &data.storage.users[id as usize];
 
     let country_exist = params.country.is_some();
-    let from_date_exist = params.fromDate.is_some();
-    let to_date_exist = params.toDate.is_some();
-    let to_distance_exist = params.toDistance.is_some();
+    let from_date_exist = params.from_date.is_some();
+    let to_date_exist = params.to_date.is_some();
+    let to_distance_exist = params.to_distance.is_some();
+
+    let mut country = "";
 
     if country_exist {
-        let country = params.country.as_ref().unwrap().as_str();
+        country = params.country.as_ref().unwrap().as_str();
+
         if country == "" {
             return HttpResponse::BadRequest().finish();
         }
@@ -163,13 +170,13 @@ async fn user_visits(
         // найдем индекс до которого будем итерироваться (binary search)
         end_idx = user
             .visits
-            .partition_point(|x| x.visited_at < params.toDate.as_ref().unwrap().clone());
+            .partition_point(|x| x.visited_at < params.to_date.as_ref().unwrap().clone());
     }
     if from_date_exist {
         // найдем индекс от которого будем итерироваться (binary search)
         start_idx = user
             .visits
-            .partition_point(|x| x.visited_at <= params.fromDate.as_ref().unwrap().clone());
+            .partition_point(|x| x.visited_at <= params.from_date.as_ref().unwrap().clone());
     }
 
     let mut visit_ids: Vec<usize> = Vec::new();
@@ -178,14 +185,13 @@ async fn user_visits(
         let user_visit = &user.visits[i];
 
         if country_exist {
-            let country = params.country.as_ref().unwrap().as_str();
             let country_id = data.storage.countries.map.get(country).unwrap().clone();
             if user_visit.country != country_id {
                 continue;
             }
         }
         if to_distance_exist {
-            if user_visit.distance >= params.toDistance.as_ref().unwrap().clone() {
+            if user_visit.distance >= params.to_distance.as_ref().unwrap().clone() {
                 continue;
             }
         }

@@ -6,6 +6,8 @@ use crate::{model, storage::Storage};
 const DATA_FILE: &str = "data.zip";
 const DATA_DIR: &str = "data";
 
+// разархивирует data.zip файл, считает кол-во записей по каждой сущности (user, visit, location)
+// сохраняет в in-memory stoage
 pub fn run(storage: &mut Storage) -> Result<(), Box<dyn Error>> {
     extract_json_files()?;
 
@@ -61,7 +63,7 @@ fn store_users(storage: &mut Storage, users_count: u32) -> Result<(), Box<dyn Er
                 let users_file_data: model::UsersDataJSON = serde_json::from_str(&data)?;
 
                 for user in users_file_data.users {
-                    storage.add_user(
+                    storage.store_user(
                         user.id as usize,
                         user.email.as_str(),
                         user.first_name.as_str(),
@@ -118,7 +120,7 @@ fn store_visits(storage: &mut Storage, visits_count: u32) -> Result<(), Box<dyn 
                 let visits_file_data: model::VisitsDataJSON = serde_json::from_str(&data)?;
 
                 for visit in visits_file_data.visits {
-                    storage.add_visit(
+                    storage.store_visit(
                         visit.id as usize,
                         visit.user,
                         visit.location,
