@@ -6,10 +6,10 @@ pub mod handlers_get;
 pub mod handlers_post;
 
 use actix_web::{web, App, HttpServer};
-use std::{process, time::Duration};
+use std::{process, time::Duration, sync::{Arc, RwLock}};
 
 struct AppState {
-    storage: storage::Storage,
+    storage: Arc<RwLock<storage::Storage>>,
 }
 
 #[actix_web::main]
@@ -32,7 +32,7 @@ async fn main() -> std::io::Result<()> {
 
     println!("starting web server");
 
-    let state = AppState { storage };
+    let state = AppState { storage: Arc::new(RwLock::new(storage)) };
 
     let data = web::Data::new(state);
 
@@ -43,45 +43,12 @@ async fn main() -> std::io::Result<()> {
             .service(handlers_get::visits)
             .service(handlers_get::locations)
             .service(handlers_get::user_visits)
+            .service(handlers_post::new_user)
+            .service(handlers_post::new_location)
+            .service(handlers_post::new_visit)
     })
     .keep_alive(Duration::from_secs(30))
     .bind(("127.0.0.1", 8080))?
     .run()
     .await
 }
-
-// // Добавление пользователя
-// #[post("/users/new")]
-// async fn new_user(data: web::Data<AppState>) -> HttpResponse {
-    
-// }
-
-// // Обновление пользователя
-// #[post("/users/{id}")]
-// async fn update_user(data: web::Data<AppState>) -> HttpResponse {
-    
-// }
-
-// // Добавление визита
-// #[post("/visits/new")]
-// async fn new_visit(data: web::Data<AppState>) -> HttpResponse {
-    
-// }
-
-// // Обновление визита
-// #[post("/visits/{id}")]
-// async fn update_visit(data: web::Data<AppState>) -> HttpResponse {
-    
-// }
-
-// // Добавление локации
-// #[post("/locations/new")]
-// async fn new_location(data: web::Data<AppState>) -> HttpResponse {
-    
-// }
-
-// // Обновление локации
-// #[post("/locations/{id}")]
-// async fn update_location(data: web::Data<AppState>) -> HttpResponse {
-    
-// }

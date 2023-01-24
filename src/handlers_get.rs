@@ -1,25 +1,20 @@
-use actix_web::{get, web, HttpResponse, http::header};
+use actix_web::{get, http::header, web, HttpResponse};
 
-use crate::{AppState, model};
+use crate::{model, AppState};
 
 // Получение путешественника по id
 #[get("/users/{id}")]
 async fn users(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpResponse {
     let id = path.into_inner().0 as usize;
 
-    let user = &data.storage.users[id.clone()];
+    let s = data.storage.read().unwrap();
+    let user = &s.users[id.clone()];
 
     let user_json = model::UserJSON {
         id: id as u32,
         email: user.email.clone(),
-        first_name: data
-            .storage
-            .first_names
-            .get_by_idx(user.first_name.clone() as usize),
-        last_name: data
-            .storage
-            .last_names
-            .get_by_idx(user.last_name.clone() as usize),
+        first_name: s.first_names.get_by_idx(user.first_name.clone() as usize),
+        last_name: s.last_names.get_by_idx(user.last_name.clone() as usize),
         gender: user.gender.to_string(),
         birth_date: user.birth_date,
     };
@@ -36,7 +31,8 @@ async fn users(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpRespon
 async fn visits(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpResponse {
     let id = path.into_inner().0 as usize;
 
-    let visit = &data.storage.visits[id.clone()];
+    let s = data.storage.read().unwrap();
+    let visit = &s.visits[id.clone()];
 
     let visit_json = model::VisitJSON {
         id: id as u32,
@@ -58,22 +54,14 @@ async fn visits(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpRespo
 async fn locations(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpResponse {
     let id = path.into_inner().0 as usize;
 
-    let location = &data.storage.locations[id.clone()];
+    let s = data.storage.read().unwrap();
+    let location = &s.locations[id.clone()];
 
     let location_json = model::LocationJSON {
         id: id as u32,
-        country: data
-            .storage
-            .countries
-            .get_by_idx(location.country.clone() as usize),
-        city: data
-            .storage
-            .cities
-            .get_by_idx(location.city.clone() as usize),
-        place: data
-            .storage
-            .places
-            .get_by_idx(location.place.clone() as usize),
+        country: s.countries.get_by_idx(location.country.clone() as usize),
+        city: s.cities.get_by_idx(location.city.clone() as usize),
+        place: s.places.get_by_idx(location.place.clone() as usize),
         distance: location.distance.clone(),
     };
 
@@ -84,7 +72,7 @@ async fn locations(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpRe
         .body(serialized)
 }
 
-// Получение визитов пользователя (отсортированные по visited_at) согласно get параметрам 
+// Получение визитов пользователя (отсортированные по visited_at) согласно get параметрам
 #[get("/users/{id}/visits")]
 async fn user_visits(
     data: web::Data<AppState>,
@@ -93,11 +81,12 @@ async fn user_visits(
 ) -> HttpResponse {
     let id = path.into_inner().0 as usize;
 
-    if id > data.storage.users.len() - 1 {
+    let s = data.storage.read().unwrap();
+    if id > s.users.len() - 1 {
         return HttpResponse::NotFound().finish();
     }
 
-    let user = &data.storage.users[id as usize];
+    let user = &s.users[id as usize];
 
     let country_exist = params.country.is_some();
     let from_date_exist = params.fromDate.is_some();
@@ -112,7 +101,7 @@ async fn user_visits(
         if country == "" {
             return HttpResponse::BadRequest().finish();
         }
-        if data.storage.countries.exist(country) == false {
+        if s.countries.exist(country) == false {
             return HttpResponse::NotFound().finish();
         }
     }
@@ -134,15 +123,15 @@ async fn user_visits(
     }
 
     let mut response_json = model::UserVisitsJSON {
-        visits: Vec::with_capacity(end_idx-start_idx+1),
+        visits: Vec::with_capacity(end_idx - start_idx + 1),
     };
 
     for i in start_idx..end_idx {
         let user_visit = &user.visits[i];
-        let location = &data.storage.locations[user_visit.location as usize];
+        let location = &s.locations[user_visit.location as usize];
 
         if country_exist {
-            let country_id = data.storage.countries.map.get(country).unwrap().clone();
+            let country_id = s.countries.map.get(country).unwrap().clone();
             if location.country != country_id {
                 continue;
             }
@@ -153,12 +142,12 @@ async fn user_visits(
             }
         }
 
-        let visit = &data.storage.visits[user_visit.id as usize];
+        let visit = &s.visits[user_visit.id as usize];
 
         response_json.visits.push(model::UserVisitJSON {
             mark: visit.mark,
             visited_at: visit.visited_at,
-            place: data.storage.places.get_by_idx(location.place as usize),
+            place: s.places.get_by_idx(location.place as usize),
         })
     }
 
