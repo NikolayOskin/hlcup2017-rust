@@ -37,8 +37,8 @@ impl Storage {
         last_name: &str,
         birth_date: i32,
         gender: &str,
-    ) {
-        self.users[id] = model::User {
+    ) -> Result<(), String> {
+        let user = model::User {
             email: String::from(email),
             first_name: self.first_names.put(String::from(first_name)),
             last_name: self.last_names.put(String::from(last_name)),
@@ -46,9 +46,25 @@ impl Storage {
             gender: gender.into(),
             visits: Vec::new(),
         };
+
+        if user.gender.to_string() == "" {
+            return Err("gender is unknown".into());
+        }
+
+        if self.users.len() == id {
+            self.users.push(model::User::default());
+        }
+
+        self.users[id] = user;
+
+        Ok(())
     }
 
     pub fn store_visit(&mut self, id: u32, user: u32, location: u32, visited_at: i32, mark: u8) {
+        if self.visits.len() == id as usize {
+            self.visits.push(model::Visit::default());
+        }
+
         self.visits[id as usize] = model::Visit {
             user,
             location,
@@ -57,12 +73,11 @@ impl Storage {
         };
 
         let user = &mut self.users[user as usize];
-        //let location = &self.locations[location as usize];
 
         let user_visit = model::UserVisit {
             id,
             visited_at,
-            location
+            location,
         };
 
         // вставка в сортированный (по visited_at полю) вектор
@@ -78,6 +93,10 @@ impl Storage {
         place: &str,
         distance: u32,
     ) {
+        if self.locations.len() == id as usize {
+            self.locations.push(model::Location::default());
+        }
+
         self.locations[id] = model::Location {
             country: self.countries.put(String::from(country)),
             city: self.cities.put(String::from(city)),
