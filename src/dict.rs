@@ -28,7 +28,7 @@ impl Dict {
         self.map.insert(key.clone(), self.vec.len() as u32);
         self.vec.push(key);
 
-        return self.vec.len() as u32;
+        return self.vec.len() as u32 - 1;
     }
 
     pub fn get_by_idx(&self, idx: usize) -> String {
