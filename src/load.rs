@@ -121,7 +121,7 @@ fn store_visits(storage: &mut Storage, visits_count: u32) -> Result<(), Box<dyn 
 
                 for visit in visits_file_data.visits {
                     storage.store_visit(
-                        visit.id as usize,
+                        visit.id,
                         visit.user,
                         visit.location,
                         visit.visited_at,

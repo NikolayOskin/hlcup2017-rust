@@ -47,9 +47,8 @@ pub struct Visit {
 }
 
 pub struct UserVisit {
-    pub id: usize,
-    pub country: u32,
-    pub distance: u32,
+    pub id: u32,
+    pub location: u32,
     pub visited_at: i32,
 }
 
@@ -105,12 +104,12 @@ pub struct LocationsDataJSON {
 }
 
 #[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
+//#[serde(rename_all = "camelCase")]
 pub struct UserVisitsParams {
-    pub from_date: Option<i32>,
-    pub to_date: Option<i32>,
+    pub fromDate: Option<i32>,
+    pub toDate: Option<i32>,
     pub country: Option<String>,
-    pub to_distance: Option<u32>,
+    pub toDistance: Option<u32>,
 }
 
 #[derive(Debug, Serialize)]

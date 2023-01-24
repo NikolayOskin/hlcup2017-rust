@@ -48,8 +48,8 @@ impl Storage {
         };
     }
 
-    pub fn store_visit(&mut self, id: usize, user: u32, location: u32, visited_at: i32, mark: u8) {
-        self.visits[id] = model::Visit {
+    pub fn store_visit(&mut self, id: u32, user: u32, location: u32, visited_at: i32, mark: u8) {
+        self.visits[id as usize] = model::Visit {
             user,
             location,
             visited_at,
@@ -57,13 +57,12 @@ impl Storage {
         };
 
         let user = &mut self.users[user as usize];
-        let location = &self.locations[location as usize];
+        //let location = &self.locations[location as usize];
 
         let user_visit = model::UserVisit {
             id,
             visited_at,
-            country: location.country,
-            distance: location.distance,
+            location
         };
 
         // вставка в сортированный (по visited_at полю) вектор
