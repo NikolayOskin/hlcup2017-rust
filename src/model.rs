@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, PartialEq)]
 pub enum Gender {
     #[default]
     None,
@@ -34,6 +34,7 @@ pub struct User {
     pub first_name: u32,
     pub last_name: u32,
     pub birth_date: i32,
+    pub age: u8,
     pub gender: Gender,
     pub visits: Vec<UserVisit>, // отсортирован по visited_at
 }
@@ -58,6 +59,14 @@ pub struct Location {
     pub city: u32,
     pub place: u32,
     pub distance: u32,
+
+    // посещения локаций, отсортированные по visited_at
+    pub visits: Vec<LocationVisit>,
+}
+
+pub struct LocationVisit {
+    pub visit_id: u32,
+    pub visited_at: i32,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone, Default)]
@@ -112,6 +121,15 @@ pub struct UserVisitsParams {
     pub toDistance: Option<u32>,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct LocationAvgParams {
+    pub fromDate: Option<i32>,
+    pub toDate: Option<i32>,
+    pub fromAge: Option<u32>,
+    pub toAge: Option<u32>,
+    pub gender: Option<String>,
+}
+
 #[derive(Debug, Serialize)]
 pub struct UserVisitJSON {
     pub mark: u8,
@@ -122,4 +140,9 @@ pub struct UserVisitJSON {
 #[derive(Debug, Serialize)]
 pub struct UserVisitsJSON {
     pub visits: Vec<UserVisitJSON>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct LocationAverageJSON {
+    pub avg: f64,
 }
