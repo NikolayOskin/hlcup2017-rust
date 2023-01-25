@@ -3,7 +3,7 @@ pub mod load;
 pub mod model;
 pub mod storage;
 pub mod handlers_get;
-pub mod handlers_post;
+pub mod handlers_create;
 
 use actix_web::{web, App, HttpServer};
 use std::{process, time::Duration, sync::{Arc, RwLock}};
@@ -43,9 +43,10 @@ async fn main() -> std::io::Result<()> {
             .service(handlers_get::visits)
             .service(handlers_get::locations)
             .service(handlers_get::user_visits)
-            .service(handlers_post::new_user)
-            .service(handlers_post::new_location)
-            .service(handlers_post::new_visit)
+            .service(handlers_get::location_avg)
+            .service(handlers_create::new_user)
+            .service(handlers_create::new_location)
+            .service(handlers_create::new_visit)
     })
     .keep_alive(Duration::from_secs(30))
     .bind(("127.0.0.1", 8080))?
