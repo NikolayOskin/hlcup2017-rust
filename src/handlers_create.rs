@@ -8,7 +8,7 @@ async fn new_user(data: web::Data<AppState>, user: web::Json<model::UserJSON>) -
     let mut s = data.storage.write().unwrap();
 
     if s.users.len() > user.id as usize {
-        // пользователь уже существует
+        // пользователь с таким id уже существует
         return HttpResponse::BadRequest()
             .insert_header(header::ContentType::json())
             .body("{}");
@@ -27,12 +27,12 @@ async fn new_user(data: web::Data<AppState>, user: web::Json<model::UserJSON>) -
         Ok(_) => {
             return HttpResponse::Ok()
                 .insert_header(header::ContentType::json())
-                .body("")
+                .body("{}")
         }
         Err(_) => {
             return HttpResponse::BadRequest()
                 .insert_header(header::ContentType::json())
-                .body("")
+                .body("{}")
         }
     }
 }
@@ -62,7 +62,7 @@ async fn new_location(
 
     HttpResponse::Ok()
         .insert_header(header::ContentType::json())
-        .body("")
+        .body("{}")
 }
 
 // Добавление визита
@@ -87,5 +87,5 @@ async fn new_visit(data: web::Data<AppState>, visit: web::Json<model::VisitJSON>
 
     HttpResponse::Ok()
         .insert_header(header::ContentType::json())
-        .body("")
+        .body("{}")
 }
