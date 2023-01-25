@@ -25,14 +25,14 @@ impl Dict {
             return val.unwrap().clone();
         }
 
-        self.map.insert(key.clone(), self.vec.len() as u32);
-        self.vec.push(key);
+        self.vec.push(key.clone());
+        self.map.insert(key, self.vec.len() as u32 - 1);
 
         return self.vec.len() as u32 - 1;
     }
 
     pub fn get_by_idx(&self, idx: usize) -> String {
-        self.vec[idx].clone()
+        self.vec[idx].to_string()
     }
 
     pub fn exist(&self, s: &str) -> bool {

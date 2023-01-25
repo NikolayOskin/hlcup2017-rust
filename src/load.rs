@@ -63,7 +63,7 @@ fn store_users(storage: &mut Storage, users_count: u32) -> Result<(), Box<dyn Er
                 let users_file_data: model::UsersDataJSON = serde_json::from_str(&data)?;
 
                 for user in users_file_data.users {
-                    storage.store_user(
+                    let _ = storage.store_user(
                         user.id as usize,
                         user.email.as_str(),
                         user.first_name.as_str(),
