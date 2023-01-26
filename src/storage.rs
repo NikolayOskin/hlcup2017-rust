@@ -19,6 +19,8 @@ pub struct Storage {
     pub countries: Dict,
     pub cities: Dict,
     pub places: Dict,
+
+    pub timestamp: i64,
 }
 
 impl Storage {
@@ -35,6 +37,8 @@ impl Storage {
             countries: Dict::new(),
             cities: Dict::new(),
             places: Dict::new(),
+
+            timestamp: 0,
         }
     }
 
@@ -51,8 +55,8 @@ impl Storage {
             return Err("email is already exist".into());
         }
 
-        let now_date_time: DateTime<Utc> = DateTime::from_utc(
-            NaiveDateTime::from_timestamp_opt(CURR_TIMESTAMP, 0).unwrap(),
+        let curr_date_time: DateTime<Utc> = DateTime::from_utc(
+            NaiveDateTime::from_timestamp_opt(self.timestamp, 0).unwrap(),
             Utc,
         );
         let birth_date_time = DateTime::from_utc(
@@ -65,7 +69,7 @@ impl Storage {
             first_name: self.first_names.put(String::from(first_name)),
             last_name: self.last_names.put(String::from(last_name)),
             birth_date,
-            age: now_date_time.years_since(birth_date_time).unwrap() as u8,
+            age: curr_date_time.years_since(birth_date_time).unwrap() as u8,
             gender: gender.into(),
             visits: Vec::new(),
         };
@@ -110,13 +114,15 @@ impl Storage {
 
         let location_visit = model::LocationVisit {
             visit_id: id,
-            visited_at
+            visited_at,
         };
 
         let location = &mut self.locations[location as usize];
 
         // вставка в сортированный вектор визитов локации
-        let location_visit_idx = location.visits.partition_point(|x| x.visited_at < visited_at);
+        let location_visit_idx = location
+            .visits
+            .partition_point(|x| x.visited_at < visited_at);
         location.visits.insert(location_visit_idx, location_visit)
     }
 

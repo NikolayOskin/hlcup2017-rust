@@ -1,16 +1,22 @@
-use std::{error::Error, fs, path::Path};
+use std::{error::Error, fs, path::Path, io::Read};
 use zip::ZipArchive;
 
 use crate::{model, storage::Storage};
 
 const DATA_FILE: &str = "data.zip";
+const OPTIONS_FILE: &str = "options.txt";
+const TEMP_DIR: &str = "tmp/data";
 const DATA_DIR: &str = "data";
 
-// разархивирует data.zip файл, считает кол-во записей по каждой сущности (user, visit, location)
-// сохраняет в in-memory stoage
+// разархивирует data.zip файл, читает timestamp временеи генерации данных (из options.txt)
+// считает кол-во записей по каждой сущности (user, visit, location)
+// сохраняет записи в in-memory storage
 pub fn run(storage: &mut Storage) -> Result<(), Box<dyn Error>> {
+    storage.timestamp = get_timestamp();
+
     extract_json_files()?;
 
+    // считаем кол-во каждого типа сущности, чтобы преаллоцировать векторы с необходимым capacity
     let locations_cnt = count_locations()?;
     let users_cnt = count_users()?;
     let visits_cnt = count_visits()?;
@@ -22,13 +28,26 @@ pub fn run(storage: &mut Storage) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+fn get_timestamp() -> i64 {
+    let mut file = fs::File::open(TEMP_DIR.to_owned() + "/" + OPTIONS_FILE).unwrap();
+
+    let mut buf = "".to_string();
+
+    _ = file.read_to_string(&mut buf).unwrap();
+
+    let timestamp_str = buf.lines().next().unwrap();
+    let timestamp: i64 = timestamp_str.parse().unwrap();
+
+    timestamp
+}
+
 fn extract_json_files() -> Result<(), Box<dyn Error>> {
     let exist = Path::new(DATA_DIR).exists();
     if !exist {
         fs::create_dir_all(DATA_DIR)?;
     }
 
-    let file = fs::File::open(DATA_FILE)?;
+    let file = fs::File::open(TEMP_DIR.to_owned() + "/" + DATA_FILE)?;
     let mut archive = ZipArchive::new(file)?;
 
     for i in 0..archive.len() {
