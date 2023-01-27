@@ -36,7 +36,7 @@ pub struct User {
     pub birth_date: i32,
     pub age: u8,
     pub gender: Gender,
-    pub visits: Vec<UserVisit>, // отсортирован по visited_at
+    pub visits: Vec<UserVisit>, // sorted by visited_at
 }
 
 #[derive(Default)]
@@ -60,7 +60,7 @@ pub struct Location {
     pub place: u32,
     pub distance: u32,
 
-    // посещения локаций, отсортированные по visited_at
+    // sorted by visited_at
     pub visits: Vec<LocationVisit>,
 }
 
@@ -113,7 +113,6 @@ pub struct LocationsDataJSON {
 }
 
 #[derive(Debug, Deserialize)]
-//#[serde(rename_all = "camelCase")]
 pub struct UserVisitsParams {
     pub fromDate: Option<i32>,
     pub toDate: Option<i32>,

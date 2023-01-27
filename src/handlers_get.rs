@@ -5,7 +5,6 @@ use crate::{
     AppState,
 };
 
-// Получение путешественника по id
 #[get("/users/{id}")]
 async fn users(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpResponse {
     let id = path.into_inner().0 as usize;
@@ -29,7 +28,6 @@ async fn users(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpRespon
         .body(serialized)
 }
 
-// Получение визита по id
 #[get("/visits/{id}")]
 async fn visits(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpResponse {
     let id = path.into_inner().0 as usize;
@@ -52,7 +50,6 @@ async fn visits(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpRespo
         .body(serialized)
 }
 
-// Получение достопремичательности по id
 #[get("/locations/{id}")]
 async fn locations(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpResponse {
     let id = path.into_inner().0 as usize;
@@ -75,7 +72,6 @@ async fn locations(data: web::Data<AppState>, path: web::Path<(u32,)>) -> HttpRe
         .body(serialized)
 }
 
-// Получение визитов пользователя (отсортированные по visited_at) согласно get параметрам
 #[get("/users/{id}/visits")]
 async fn user_visits(
     data: web::Data<AppState>,
@@ -113,13 +109,13 @@ async fn user_visits(
     let mut start_idx: usize = 0;
 
     if to_date_exist {
-        // найдем индекс до которого будем итерироваться (binary search)
+        // binary search of the last index to iterate to
         end_idx = user
             .visits
             .partition_point(|x| x.visited_at < params.toDate.as_ref().unwrap().clone());
     }
     if from_date_exist {
-        // найдем индекс от которого будем итерироваться (binary search)
+        // binary search of the first index to iterate from
         start_idx = user
             .visits
             .partition_point(|x| x.visited_at <= params.fromDate.as_ref().unwrap().clone());
@@ -161,7 +157,6 @@ async fn user_visits(
         .body(resp.unwrap())
 }
 
-// Получение средней оценки достопремичательности
 #[get("/locations/{id}/avg")]
 async fn location_avg(
     data: web::Data<AppState>,
@@ -183,13 +178,13 @@ async fn location_avg(
     let mut start_idx: usize = 0;
 
     if to_date_exist {
-        // найдем индекс до которого будем итерироваться (binary search)
+        // binary search of the last index to iterate to
         end_idx = location
             .visits
             .partition_point(|x| x.visited_at < params.toDate.as_ref().unwrap().clone());
     }
     if from_date_exist {
-        // найдем индекс от которого будем итерироваться (binary search)
+        // binary search of the first index to iterate from
         start_idx = location
             .visits
             .partition_point(|x| x.visited_at <= params.fromDate.as_ref().unwrap().clone());

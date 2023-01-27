@@ -3,15 +3,12 @@ use std::{collections::HashSet, usize};
 use crate::{dict::Dict, model};
 use chrono::{DateTime, NaiveDateTime, Utc};
 
-// время генерации данных
-const CURR_TIMESTAMP: i64 = 1544576406;
-
 pub struct Storage {
     pub users: Vec<model::User>,
     pub visits: Vec<model::Visit>,
     pub locations: Vec<model::Location>,
 
-    // сет для проверки дублей email'ов при добавлении пользователя
+    // for duplications check purposes
     emails: HashSet<String>,
 
     pub last_names: Dict,
@@ -108,7 +105,7 @@ impl Storage {
             location,
         };
 
-        // вставка в сортированный вектор визитов пользователя
+        // inserting to the sorted vector of user visits
         let user_visit_idx = user.visits.partition_point(|x| x.visited_at < visited_at);
         user.visits.insert(user_visit_idx, user_visit);
 
@@ -119,7 +116,7 @@ impl Storage {
 
         let location = &mut self.locations[location as usize];
 
-        // вставка в сортированный вектор визитов локации
+        // inserting to the sorted vector of location visits
         let location_visit_idx = location
             .visits
             .partition_point(|x| x.visited_at < visited_at);

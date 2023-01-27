@@ -2,13 +2,12 @@ use actix_web::{http::header, post, web, HttpResponse};
 
 use crate::{model, AppState};
 
-// Добавление пользователя
 #[post("/users/new")]
 async fn new_user(data: web::Data<AppState>, user: web::Json<model::UserJSON>) -> HttpResponse {
     let mut s = data.storage.write().unwrap();
 
     if s.users.len() > user.id as usize {
-        // пользователь с таким id уже существует
+        // user with this id already exists
         return HttpResponse::BadRequest()
             .insert_header(header::ContentType::json())
             .body("{}");
@@ -25,19 +24,18 @@ async fn new_user(data: web::Data<AppState>, user: web::Json<model::UserJSON>) -
 
     match res {
         Ok(_) => {
-            return HttpResponse::Ok()
+            HttpResponse::Ok()
                 .insert_header(header::ContentType::json())
                 .body("{}")
         }
         Err(_) => {
-            return HttpResponse::BadRequest()
+            HttpResponse::BadRequest()
                 .insert_header(header::ContentType::json())
                 .body("{}")
         }
     }
 }
 
-// Добавление локации
 #[post("/locations/new")]
 async fn new_location(
     data: web::Data<AppState>,
@@ -46,7 +44,7 @@ async fn new_location(
     let mut s = data.storage.write().unwrap();
 
     if s.locations.len() > location.id as usize {
-        // локация уже существует
+        // location is already exist
         return HttpResponse::BadRequest()
             .insert_header(header::ContentType::json())
             .body("{}");
@@ -65,13 +63,12 @@ async fn new_location(
         .body("{}")
 }
 
-// Добавление визита
 #[post("/visits/new")]
 async fn new_visit(data: web::Data<AppState>, visit: web::Json<model::VisitJSON>) -> HttpResponse {
     let mut s = data.storage.write().unwrap();
 
     if s.visits.len() > visit.id as usize {
-        // визит уже существует
+        // visit is already exist
         return HttpResponse::BadRequest()
             .insert_header(header::ContentType::json())
             .body("{}");

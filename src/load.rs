@@ -8,15 +8,15 @@ const OPTIONS_FILE: &str = "options.txt";
 const TEMP_DIR: &str = "tmp/data";
 const DATA_DIR: &str = "data";
 
-// разархивирует data.zip файл, читает timestamp временеи генерации данных (из options.txt)
-// считает кол-во записей по каждой сущности (user, visit, location)
-// сохраняет записи в in-memory storage
+// unzip data.zip, read the timestamp from options.txt
+// counts all entries (users, visits, locations) from json files
+// stores all the entries to in-memory storage
 pub fn run(storage: &mut Storage) -> Result<(), Box<dyn Error>> {
     storage.timestamp = get_timestamp();
 
     extract_json_files()?;
 
-    // считаем кол-во каждого типа сущности, чтобы преаллоцировать векторы с необходимым capacity
+    // counts all the entries to preallocate vectors with predefined length
     let locations_cnt = count_locations()?;
     let users_cnt = count_users()?;
     let visits_cnt = count_visits()?;
@@ -73,9 +73,9 @@ fn store_users(storage: &mut Storage, users_count: u32) -> Result<(), Box<dyn Er
     for file in files {
         let path = file?.path();
 
-        let extens = path.extension().ok_or("extension error")?.to_str();
+        let ext = path.extension().ok_or("extension error")?.to_str();
 
-        if extens == Some("json") {
+        if ext == Some("json") {
             let f_name = path.to_string_lossy();
             if f_name.contains(&"users") {
                 let data = fs::read_to_string(path.as_os_str())?;
@@ -105,9 +105,9 @@ pub fn count_users() -> Result<u32, Box<dyn Error>> {
     for file in files {
         let path = file?.path();
 
-        let extens = path.extension().ok_or("extension error")?.to_str();
+        let ext = path.extension().ok_or("extension error")?.to_str();
 
-        if extens == Some("json") {
+        if ext == Some("json") {
             let f_name = path.to_string_lossy();
             if f_name.contains(&"users") {
                 let data = fs::read_to_string(path.as_os_str())?;
@@ -130,9 +130,9 @@ fn store_visits(storage: &mut Storage, visits_count: u32) -> Result<(), Box<dyn 
     for file in files {
         let path = file?.path();
 
-        let extens = path.extension().ok_or("extension error")?.to_str();
+        let ext = path.extension().ok_or("extension error")?.to_str();
 
-        if extens == Some("json") {
+        if ext == Some("json") {
             let f_name = path.to_string_lossy();
             if f_name.contains(&"visits") {
                 let data = fs::read_to_string(path.as_os_str())?;
@@ -161,9 +161,9 @@ pub fn count_visits() -> Result<u32, Box<dyn Error>> {
     for file in files {
         let path = file?.path();
 
-        let extens = path.extension().ok_or("extension error")?.to_str();
+        let ext = path.extension().ok_or("extension error")?.to_str();
 
-        if extens == Some("json") {
+        if ext == Some("json") {
             let f_name = path.to_string_lossy();
             if f_name.contains(&"visits") {
                 let data = fs::read_to_string(path.as_os_str())?;
@@ -186,9 +186,9 @@ fn store_locations(storage: &mut Storage, locations_count: u32) -> Result<(), Bo
     for file in files {
         let path = file?.path();
 
-        let extens = path.extension().ok_or("extension error")?.to_str();
+        let ext = path.extension().ok_or("extension error")?.to_str();
 
-        if extens == Some("json") {
+        if ext == Some("json") {
             let f_name = path.to_string_lossy();
             if f_name.contains(&"locations") {
                 let data = fs::read_to_string(path.as_os_str())?;
@@ -217,9 +217,9 @@ pub fn count_locations() -> Result<u32, Box<dyn Error>> {
     for file in files {
         let path = file?.path();
 
-        let extens = path.extension().ok_or("extension error")?.to_str();
+        let ext = path.extension().ok_or("extension error")?.to_str();
 
-        if extens == Some("json") {
+        if ext == Some("json") {
             let f_name = path.to_string_lossy();
             if f_name.contains(&"locations") {
                 let data = fs::read_to_string(path.as_os_str())?;

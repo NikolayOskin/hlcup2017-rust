@@ -1,8 +1,7 @@
 use std::collections::HashMap;
 
-// словарь
-// для экономии памяти на хранение повторяющихся названий сущностей
-// например, названия стран и городов, имен, фамилий и т.д.
+// dictionary
+// for storing repeatable entities strings such as: countries, cities, firstnames etc.
 #[derive(Clone)]
 pub struct Dict {
     pub map: HashMap<String, u32>,
@@ -17,8 +16,8 @@ impl Dict {
         }
     }
 
-    // возвращает id записи, если запись в словаре существует,
-    // в противном случае создает и возвращает id созданной записи
+    // returns id of entry if entry exists
+    // otherwise creates an entry and returns its id
     pub fn put(&mut self, key: String) -> u32 {
         let val = self.map.get(&key);
         if val.is_some() {
